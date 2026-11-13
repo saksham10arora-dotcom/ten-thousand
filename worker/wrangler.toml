@@ -1,0 +1,11 @@
+name = "ten-thousand"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+
+[[durable_objects.bindings]]
+name = "CITY"
+class_name = "City"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["City"]

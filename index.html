@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>if(location.hostname==="blog.saksham.digital")location.replace("https://saksham.digital"+location.pathname+location.search+location.hash)</script>
+<meta name="description" content="A dark city that folds shut when 10,000 people have stood in it. Every visitor lights one window and bends the streets a little further.">
+<meta property="og:title" content="Ten Thousand">
+<meta property="og:description" content="This city folds shut when 10,000 people have stood in it. Come light a window.">
+<meta property="og:url" content="https://saksham.digital/ten-thousand/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://saksham.digital/ten-thousand/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ten Thousand">
+<meta name="twitter:description" content="This city folds shut when 10,000 people have stood in it. Come light a window.">
+<meta name="twitter:image" content="https://saksham.digital/ten-thousand/og.jpg">
+<link rel="canonical" href="https://saksham.digital/ten-thousand/">
+</head>
+<body>
+<title>Ten Thousand</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Martian+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the city is the page. Title top-left, flight readout top-right, one fold control docked bottom. Single night look by choice. */
+:root{
+  --bg:#07040f;
+  --ink:#f4eeff;
+  --dim:#9b8fbf;
+  --line:rgba(244,238,255,.18);
+  --panel:rgba(10,6,22,.6);
+  --neon:#ff4fa3;
+  --cyan:#5ff3ff;
+  --display:"Big Shoulders Display","Impact","Arial Narrow",sans-serif;
+  --mono:"Martian Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);overflow:hidden;user-select:none;-webkit-user-select:none;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#stage{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab;background:var(--bg)}
+#stage:active{cursor:grabbing}
+.cap{position:fixed;z-index:2;pointer-events:none;top:calc(16px + env(safe-area-inset-top,0px));left:max(20px,env(safe-area-inset-left,0px));
+  display:flex;flex-direction:column;gap:4px;text-shadow:0 2px 18px rgba(0,0,0,.9)}
+h1{margin:0;font:900 clamp(40px,7vw,88px)/.86 var(--display);letter-spacing:.01em;text-transform:uppercase}
+h1 span{color:var(--neon)}
+.sub{font-size:11px;color:var(--dim);letter-spacing:.04em;max-width:24rem;line-height:1.6}
+.meter{position:fixed;z-index:2;pointer-events:none;top:calc(18px + env(safe-area-inset-top,0px));right:max(20px,env(safe-area-inset-right,0px));
+  text-align:right;font-size:10.5px;line-height:1.7;color:var(--dim);font-variant-numeric:tabular-nums;text-shadow:0 1px 10px rgba(0,0,0,.9)}
+.meter b{display:block;font:900 clamp(26px,3.6vw,44px)/1 var(--display);color:var(--cyan)}
+.dock{position:fixed;z-index:2;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;gap:9px;pointer-events:none;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.bar{display:flex;align-items:center;gap:12px;pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 16px 6px 6px;backdrop-filter:blur(12px)}
+#toggle{font:500 12px var(--mono);color:var(--bg);background:var(--neon);border:0;border-radius:999px;padding:10px 18px;cursor:pointer;min-width:8.5em}
+label{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--dim);letter-spacing:.06em}
+input[type=range]{width:min(34vw,180px);accent-color:var(--neon)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.hint{font-size:10.5px;letter-spacing:.04em;color:var(--dim);text-align:center;text-shadow:0 1px 10px rgba(0,0,0,.9)}
+.hint kbd{font:500 10.5px var(--mono);color:var(--ink);background:rgba(244,238,255,.12);border-radius:5px;padding:1px 6px}
+#err{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:24px;text-align:center;background:var(--bg)}
+.cap::before{content:"";position:absolute;z-index:-1;inset:-40px -120px -60px -60px;background:radial-gradient(closest-side,rgba(7,4,15,.82),rgba(7,4,15,0));pointer-events:none}
+.count{font:900 clamp(30px,5vw,64px)/1 var(--display);letter-spacing:.01em;font-variant-numeric:tabular-nums;margin-top:6px}
+.count small{font:500 12px var(--mono);color:var(--dim);letter-spacing:.06em;margin-left:8px}
+.you{font-size:12px;color:var(--cyan);letter-spacing:.04em;min-height:1.4em}
+.prog{width:min(72vw,420px);height:6px;border-radius:99px;background:rgba(244,238,255,.14);overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--neon));transition:width 1.2s cubic-bezier(.22,1,.36,1)}
+.btn{font:500 12px var(--mono);color:var(--bg);background:var(--neon);border:0;border-radius:999px;padding:11px 18px;cursor:pointer;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;pointer-events:auto}
+@media (max-width:560px){.sub,.hint{display:none}}
+</style>
+
+<canvas id="stage" aria-label="A dark city that folds shut as people arrive"></canvas>
+<div class="cap">
+  <h1>Ten <span>Thousand</span></h1>
+  <div class="sub" id="sub">This city is dark and flat. Every person who shows up lights one window and bends the streets a little. At 10,000 it folds shut over your head.</div>
+  <div class="count" aria-live="polite"><span id="num">0</span><small>of 10,000 people</small></div>
+  <div class="you" id="you"></div>
+</div>
+<div class="meter"><b id="pct">0%</b>folded<br><span id="alt">0</span> m altitude · <span id="spd">0</span> km/h<br><span id="cnt"></span></div>
+<div class="dock">
+  <div class="prog" role="progressbar" aria-label="People so far" aria-valuemin="0" aria-valuemax="10000" id="prog"><i id="bar"></i></div>
+  <div class="row">
+    <button class="btn" id="copy" type="button">Copy my invite</button>
+    <a class="btn ghost" id="xpost" target="_blank" rel="noopener" href="#">Post on X</a>
+  </div>
+  <div class="bar" id="ctl" hidden>
+    <button id="toggle" type="button">Unfold it</button>
+    <label for="fold">flat <input id="fold" type="range" min="0" max="1" step="0.001" value="1"> tube</label>
+  </div>
+  <div class="hint" id="hint">drag to look · <kbd>W</kbd><kbd>S</kbd> speed · <kbd>A</kbd><kbd>D</kbd> slide · look up to climb</div>
+</div>
+<div id="err" hidden>Ten Thousand needs WebGL, and this browser did not give it one.</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script>
+(function(){
+const canvas=document.getElementById('stage');
+let R;
+try{ if(!window.THREE) throw 0; R=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); }
+catch(e){ document.getElementById('err').hidden=false; return; }
+const small=Math.min(innerWidth,innerHeight)<600, calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+R.setPixelRatio(Math.min(devicePixelRatio||1,small?1.5:2));
+const FOG=new THREE.Color(0x0b0518);
+R.setClearColor(FOG,1);
+
+/* world constants: a city 15 blocks wide (it wraps exactly once when folded) and 30 blocks long (it repeats forever) */
+const CELL=40, NX=15, NZ=30, W=CELL*NX, L=CELL*NZ, RFULL=W/(2*Math.PI);
+const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(62,1,.5,4000);
+const G={uK:{value:0},uW:{value:W},uL:{value:L},uCamZ:{value:0},uT:{value:0},uFogC:{value:FOG},uFogD:{value:.0021},uLit:{value:0},uMine:{value:-1}};
+const BEND=`uniform float uK,uW,uL,uCamZ,uT;
+  vec3 bend(vec3 p,out float a){ a=0.; if(uK<.0005) return p; float R=uW/(6.2831853*uK); a=p.x/R; float r=R-p.y; return vec3(sin(a)*r,R-cos(a)*r,p.z); }
+  vec3 bendN(vec3 n,float a){ float c=cos(a),s=sin(a); return vec3(n.x*c-n.y*s,n.x*s+n.y*c,n.z); }
+  float wrapZ(float z){ return mod(z-uCamZ+uL*.5,uL)-uL*.5+uCamZ; }`;
+const FOGF=`uniform vec3 uFogC;uniform float uFogD;vec3 fog(vec3 c,vec3 wp){ float d=length(wp-cameraPosition); return mix(uFogC,c,exp(-d*uFogD)); }`;
+const HASH=`float h1(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }`;
+
+/* ---------- buildings ---------- */
+let seedN=7; const rnd=()=>{ seedN=(seedN*1664525+1013904223)>>>0; return seedN/4294967296; };
+const lots=[];
+for(let i=0;i<NX;i++) for(let j=0;j<NZ;j++){
+  const cx=(i+.5)*CELL-W/2, cz=(j+.5)*CELL, r=rnd();
+  if(r<.05) continue;                                             // empty lot: a plaza
+  if(r<.22){ lots.push([cx,cz,25+rnd()*3,25+rnd()*3,26+Math.pow(rnd(),1.4)*46]); }
+  else if(r<.5){ const ax=rnd()<.5; for(const s of [-1,1]) lots.push(ax?[cx+s*7.4,cz,12.4,26,10+Math.pow(rnd(),1.8)*40]:[cx,cz+s*7.4,26,12.4,10+Math.pow(rnd(),1.8)*40]); }
+  else for(const sx of [-1,1]) for(const sz of [-1,1]){ if(rnd()<.08) continue; lots.push([cx+sx*7.4,cz+sz*7.4,11+rnd()*2,11+rnd()*2,5+Math.pow(rnd(),2.3)*44]); }
+}
+const boxG=new THREE.BoxGeometry(1,1,1); boxG.translate(0,.5,0);
+const bMat=new THREE.ShaderMaterial({uniforms:G,
+  vertexShader:BEND+`attribute float aSeed; varying vec3 vLoc,vScl,vN,vWN,vWP; varying float vSeed,vLZ;
+    void main(){ vec3 sc=vec3(length(instanceMatrix[0].xyz),length(instanceMatrix[1].xyz),length(instanceMatrix[2].xyz));
+      vec4 lp=instanceMatrix*vec4(position,1.); float oz=instanceMatrix[3].z; lp.z+=wrapZ(oz)-oz;
+      float a; vec3 wp=bend(lp.xyz,a); vLoc=position; vScl=sc; vN=normal; vWN=bendN(normal,a); vWP=wp; vSeed=aSeed; vLZ=lp.z;
+      gl_Position=projectionMatrix*viewMatrix*vec4(wp,1.); }`,
+  fragmentShader:FOGF+HASH+`uniform float uT,uLit,uMine; varying vec3 vLoc,vScl,vN,vWN,vWP; varying float vSeed,vLZ;
+    void main(){ float mine=step(abs(vSeed-uMine),.00001); vec3 tint=.5+.5*cos(6.2831*(vSeed*3.+vec3(0.,.33,.67))); vec3 col;
+      if(vN.y>.5){ vec2 q=vLoc.xz*vScl.xz; float e=max(abs(vLoc.x),abs(vLoc.z)); col=vec3(.012,.012,.02)+step(.47,e)*tint*(vSeed>.55?.9:.06);
+        col+=step(.985,h1(floor(q*.7)+vSeed))*vec3(1.,.25,.2)*(.5+.5*sin(uT*3.+vSeed*40.)); }
+      else { vec2 uv=abs(vN.x)>.5?vec2(vLoc.z*vScl.z,vLoc.y*vScl.y):vec2(vLoc.x*vScl.x,vLoc.y*vScl.y);
+        vec2 cs=vec2(1.7,2.3)*(vSeed>.5?1.:1.25); vec2 id=floor(uv/cs),f=fract(uv/cs);
+        float win=step(.16,f.x)*step(f.x,.84)*step(.22,f.y)*step(f.y,.8);
+        float wave=.5+.5*sin(vLZ*.011-uT*.5+vSeed*6.);
+        float lit=step(1.-(.02+uLit*(.3+.3*wave)),h1(id+vSeed*71.)); lit=max(lit,mine);
+        vec3 wc=mix(vec3(1.,.72,.38),vec3(.5,.85,1.),step(.72,h1(id.yx+vSeed*13.)))*(.45+h1(id*1.7)*.9);
+        if(vSeed>.86) wc=mix(wc,tint*1.3,.75); wc=mix(wc,vec3(.4,1.,1.)*(1.25+.5*sin(uT*2.4)),mine);
+        float face=.55+.45*max(dot(normalize(vWN),normalize(vec3(.3,.5,.8))),0.);
+        col=vec3(.02,.018,.035)*face+tint*.012+win*(lit*wc*.95+(1.-lit)*vec3(.012,.016,.03));
+        col+=tint*step(.7,vSeed)*smoothstep(.02,0.,abs(vLoc.y-.975)-.012)*1.6*(.15+.85*uLit); col+=mine*vec3(.3,1.,1.)*smoothstep(.02,0.,abs(vLoc.y-.975)-.02)*2.2;
+        col+=vec3(1.,.55,.3)*.05*smoothstep(8.,0.,vLoc.y*vScl.y); }
+      gl_FragColor=vec4(fog(col,vWP),1.); }`});
+{ const m=new THREE.InstancedMesh(boxG,bMat,lots.length), d=new THREE.Object3D(), seeds=new Float32Array(lots.length);
+  lots.forEach((l,i)=>{ d.position.set(l[0],0,l[1]); d.scale.set(l[2],l[4],l[3]); d.updateMatrix(); m.setMatrixAt(i,d.matrix); seeds[i]=rnd(); l.push(seeds[i]); });
+  boxG.setAttribute('aSeed',new THREE.InstancedBufferAttribute(seeds,1)); m.frustumCulled=false; scene.add(m); }
+
+/* ---------- ground ---------- */
+const gMat=new THREE.ShaderMaterial({uniforms:G,
+  vertexShader:BEND+`varying vec2 vL; varying vec3 vWP; void main(){ vec3 p=vec3(position.x,0.,position.z+floor(uCamZ/40.)*40.); vL=p.xz; float a; vWP=bend(p,a); gl_Position=projectionMatrix*viewMatrix*vec4(vWP,1.); }`,
+  fragmentShader:FOGF+HASH+`uniform float uT; varying vec2 vL; varying vec3 vWP;
+    void main(){ vec2 g=abs(mod(vL+vec2(0.,20.),40.)-20.); float road=step(min(g.x,g.y),5.);
+      vec3 col=mix(vec3(.008,.008,.016),vec3(.026,.026,.04),road);
+      float dz=(1.-smoothstep(.1,.2,g.x))*step(.5,fract(vL.y*.125))*step(5.,g.y), dx=(1.-smoothstep(.1,.2,g.y))*step(.5,fract(vL.x*.125))*step(5.,g.x);
+      col+=(dz+dx)*vec3(.55,.48,.3)*.55;
+      col+=(smoothstep(.35,0.,abs(g.x-5.3))*step(5.3,g.y)+smoothstep(.35,0.,abs(g.y-5.3))*step(5.3,g.x))*vec3(0.,.3,.42)*.5;
+      vec2 c=g-6.5; col+=vec3(1.,.62,.3)*.5*exp(-dot(c,c)*.09);
+      col+=road*vec3(.9,.25,.6)*.035*(.5+.5*sin(vL.y*.05-uT));
+      gl_FragColor=vec4(fog(col,vWP),1.); }`});
+{ const g=new THREE.PlaneGeometry(W,2400,small?160:300,6); g.rotateX(-Math.PI/2); const m=new THREE.Mesh(g,gMat); m.frustumCulled=false; scene.add(m); }
+
+/* ---------- traffic ---------- */
+const NC=small?1400:3200;
+{ const g=new THREE.BoxGeometry(1.1,.7,4.2), a=new Float32Array(NC*4);
+  for(let i=0;i<NC;i++){ const t=i%4; a[i*4+3]=t; a[i*4+2]=14+rnd()*22;
+    if(t<2){ a[i*4]=(Math.floor(rnd()*NX))*CELL-W/2+ (rnd()<.5?0:0); a[i*4+1]=rnd()*L; } else { a[i*4]=Math.floor(rnd()*NZ)*CELL; a[i*4+1]=rnd()*W; } }
+  g.setAttribute('aCar',new THREE.InstancedBufferAttribute(a,4));
+  const m=new THREE.InstancedMesh(g,new THREE.ShaderMaterial({uniforms:G,
+    vertexShader:BEND+`attribute vec4 aCar; varying vec3 vC,vWP;
+      void main(){ vec3 P; float sd=fract(aCar.y*.731);
+        if(aCar.w<1.5){ float dir=aCar.w<.5?1.:-1.; P=vec3(aCar.x-dir*2.4,.55,wrapZ(aCar.y+dir*aCar.z*uT))+position; vC=dir>0.?vec3(1.,.12,.1):vec3(1.,.95,.8); }
+        else { float dir=aCar.w<2.5?1.:-1.; float x=mod(aCar.y+dir*aCar.z*uT+uW*.5,uW)-uW*.5; P=vec3(x,.55,wrapZ(aCar.x)+dir*2.4)+position.zyx; vC=sd>.5?vec3(1.,.7,.2):vec3(.4,.9,1.); }
+        float a; vWP=bend(P,a); gl_Position=projectionMatrix*viewMatrix*vec4(vWP,1.); }`,
+    fragmentShader:FOGF+`varying vec3 vC,vWP; void main(){ gl_FragColor=vec4(fog(vC*1.25,vWP),1.); }`}),NC);
+  const d=new THREE.Object3D(); d.updateMatrix(); for(let i=0;i<NC;i++) m.setMatrixAt(i,d.matrix); m.frustumCulled=false; scene.add(m); }
+
+/* ---------- sky + the light at the end ---------- */
+const sky=new THREE.Mesh(new THREE.SphereGeometry(3000,24,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,
+  vertexShader:`varying vec3 vD; void main(){ vD=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+  fragmentShader:HASH+`varying vec3 vD; void main(){ vec3 d=normalize(vD); float h=d.y;
+    vec3 c=mix(vec3(.2,.05,.24),vec3(.022,.012,.06),smoothstep(-.05,.45,h)); c+=vec3(.9,.25,.45)*.22*exp(-abs(h)*9.);
+    vec2 s=floor(vec2(atan(d.z,d.x)*170.,h*260.)); c+=step(.9965,h1(s))*smoothstep(.02,.3,h)*vec3(.9,.9,1.)*.9; gl_FragColor=vec4(c,1.); }`}));
+scene.add(sky);
+const sun=new THREE.Mesh(new THREE.SphereGeometry(34,32,20),new THREE.MeshBasicMaterial({color:new THREE.Color(2.4,.9,.75),fog:false})); scene.add(sun);
+const halo=new THREE.Mesh(new THREE.SphereGeometry(60,24,16),new THREE.MeshBasicMaterial({color:new THREE.Color(.5,.08,.3),transparent:true,opacity:.35,depthWrite:false,blending:THREE.AdditiveBlending})); scene.add(halo);
+
+/* ---------- post ---------- */
+let composer=null;
+if(THREE.EffectComposer&&THREE.RenderPass&&THREE.UnrealBloomPass){ try{ composer=new THREE.EffectComposer(R); composer.addPass(new THREE.RenderPass(scene,cam));
+  composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(256,256),small?.5:.62,.6,.22)); }catch(e){ composer=null; } }
+
+/* ---------- flight ---------- */
+const P={x:20,y:15,z:0,yaw:0,pitch:.17,speed:26,k:0,kT:0,free:false};
+const keys={}; const foldEl=document.getElementById('fold'), tog=document.getElementById('toggle'),
+      pctEl=document.getElementById('pct'), altEl=document.getElementById('alt'), spdEl=document.getElementById('spd');
+const fmt=new Intl.NumberFormat('en');
+document.getElementById('cnt').textContent=fmt.format(lots.length)+' towers · '+fmt.format(NC)+' cars';
+function setFold(v){ if(!P.free) return; P.kT=Math.min(1,Math.max(0,v)); tog.textContent=P.kT>.5?'Unfold it':'Fold it'; foldEl.value=P.kT; }
+tog.addEventListener('click',()=>setFold(P.kT>.5?0:1));
+foldEl.addEventListener('input',()=>setFold(+foldEl.value));
+addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); if(k==='f') setFold(P.kT>.5?0:1); if(['w','a','s','d',' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k)) e.preventDefault(); keys[k]=true; });
+addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; }); addEventListener('blur',()=>{ for(const k in keys) keys[k]=false; });
+canvas.addEventListener('wheel',e=>{ e.preventDefault(); setFold(P.kT+e.deltaY*.0012); },{passive:false});
+
+/* ---------- the count: one shared number, everyone bends the same city ---------- */
+const GOAL=10000, API='https://ten-thousand.saksham10arora.workers.dev/v1/city', URL_='https://saksham.digital/ten-thousand/';
+const numEl=document.getElementById('num'), youEl=document.getElementById('you'), barEl=document.getElementById('bar'), progEl=document.getElementById('prog'),
+      subEl=document.getElementById('sub'), copyEl=document.getElementById('copy'), xEl=document.getElementById('xpost');
+const S={count:0,shown:0,me:0};
+const sim=new URLSearchParams(location.search).get('sim');           // ?sim=3412 previews a count without touching the real one
+function invite(){ return S.me?`I'm light #${fmt.format(S.me)} of 10,000. When 10,000 people show up, this city folds shut. ${URL_}`:`This city folds shut when 10,000 people have stood in it. ${URL_}`; }
+function apply(){ const frac=Math.min(1,S.count/GOAL);
+  G.uLit.value=frac; barEl.style.width=(frac*100)+'%'; progEl.setAttribute('aria-valuenow',Math.min(S.count,GOAL));
+  if(S.me){ youEl.textContent=`You are light #${fmt.format(S.me)}. Your tower is the cyan one.`; G.uMine.value=lots[(S.me-1)%lots.length][5]; }
+  xEl.href='https://x.com/intent/post?text='+encodeURIComponent(invite());
+  if(S.count>=GOAL&&!P.free){ P.free=true; P.kT=1; document.getElementById('ctl').hidden=false;
+    subEl.textContent='10,000 people stood here and the city folded shut. It is yours to fly now: fold it, unfold it, go.';
+    document.getElementById('hint').innerHTML+=' · scroll or <kbd>F</kbd> to fold'; }
+  if(!P.free) P.kT=frac; }
+function take(d){ if(!d||typeof d.count!=='number') return; S.count=Math.max(S.count,d.count); if(d.n) S.me=d.n; apply(); }
+function myId(){ try{ let v=localStorage.getItem('tt-id'); if(!v){ v=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()); localStorage.setItem('tt-id',v); } return v; }catch(e){ return ''; } }
+apply();
+if(sim!==null){ S.count=Math.max(0,parseInt(sim,10)||0); S.me=S.count; apply(); }
+else{ const id=myId();
+  fetch(API+'/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}).then(r=>r.json()).then(take)
+    .catch(()=>{ youEl.textContent='The counter is unreachable right now. The city is still here.'; });
+  setInterval(()=>{ if(!document.hidden) fetch(API).then(r=>r.json()).then(take).catch(()=>{}); },15000); }
+copyEl.addEventListener('click',()=>{ const t=invite(); const done=()=>{ copyEl.textContent='Copied'; setTimeout(()=>copyEl.textContent='Copy my invite',1600); };
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(done).catch(()=>{ prompt('Copy this:',t); }); });
+let drag=null; canvas.addEventListener('pointerdown',e=>{ canvas.setPointerCapture(e.pointerId); drag=[e.clientX,e.clientY]; });
+canvas.addEventListener('pointermove',e=>{ if(!drag) return; P.yaw+=(e.clientX-drag[0])*.0035; P.pitch=Math.min(1.45,Math.max(-1.2,P.pitch+(e.clientY-drag[1])*.0035)); drag=[e.clientX,e.clientY]; });
+const end=()=>{ drag=null; }; canvas.addEventListener('pointerup',end); canvas.addEventListener('pointercancel',end);
+
+let lw=0,lh=0; function resize(){ const w=canvas.clientWidth||innerWidth,h=canvas.clientHeight||innerHeight; if(w<2||h<2) return false; if(w===lw&&h===lh) return true; lw=w; lh=h;
+  R.setSize(w,h,false); if(composer){ composer.setPixelRatio(R.getPixelRatio()); composer.setSize(w,h); } cam.aspect=w/h; cam.fov=w<h?78:62; cam.updateProjectionMatrix(); return true; }
+const qz=new THREE.Quaternion(),qy=new THREE.Quaternion(),qx=new THREE.Quaternion(),AX=new THREE.Vector3(1,0,0),AY=new THREE.Vector3(0,1,0),AZ=new THREE.Vector3(0,0,1);
+let last=performance.now()/1000,time=0,tick10=0;
+function tick(now){
+  if(!resize()) return;
+  const dt=Math.min(.05,Math.max(.001,now-last)); last=now; time+=dt;
+  S.shown+=(S.count-S.shown)*Math.min(1,dt*1.6); if(Math.abs(S.count-S.shown)<.6) S.shown=S.count;
+  P.k+=(P.kT-P.k)*Math.min(1,dt*(P.free?2.2:.5)); if(Math.abs(P.kT-P.k)<.0004) P.k=P.kT;
+  P.speed=Math.min(140,Math.max(0,P.speed+((keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0))*46*dt));
+  const strafe=(keys.a||keys.arrowleft?1:0)-(keys.d||keys.arrowright?1:0);
+  const cp=Math.cos(P.pitch), fx=Math.sin(P.yaw)*cp, fz=Math.cos(P.yaw)*cp, fy=Math.sin(Math.abs(P.pitch-.17)<.12?0:P.pitch-.17);
+  P.x+=(fx*P.speed+Math.cos(P.yaw)*strafe*30)*dt; P.z+=(fz*P.speed-Math.sin(P.yaw)*strafe*30)*dt; P.y+=fy*P.speed*.8*dt;
+  P.y=Math.min(RFULL*1.75,Math.max(4,P.y)); P.x=((P.x+W/2)%W+W)%W-W/2; P.z=((P.z%L)+L)%L;
+  const k=P.k; let a=0, wx=P.x, wy=P.y; if(k>.0005){ const Rr=W/(2*Math.PI*k); a=P.x/Rr; const r=Rr-P.y; wx=Math.sin(a)*r; wy=Rr-Math.cos(a)*r; }
+  cam.position.set(wx,wy,P.z); qz.setFromAxisAngle(AZ,a); qy.setFromAxisAngle(AY,Math.PI+P.yaw); qx.setFromAxisAngle(AX,P.pitch);
+  cam.quaternion.copy(qz).multiply(qy).multiply(qx); cam.updateMatrixWorld();
+  G.uK.value=k; G.uCamZ.value=P.z; G.uT.value=time;
+  sky.position.copy(cam.position); sun.position.set(0,RFULL,P.z+1150); halo.position.copy(sun.position);
+  if(composer) composer.render(); else R.render(scene,cam);
+  if(++tick10%8===0){ pctEl.textContent=Math.round(k*100)+'%'; altEl.textContent=Math.round(P.y*3); spdEl.textContent=Math.round(P.speed*3.6); numEl.textContent=fmt.format(Math.round(S.shown)); }
+}
+function loop(ms){ requestAnimationFrame(loop); tick(ms/1000); }
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
