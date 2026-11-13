@@ -58,7 +58,7 @@ export default {
     const ip = req.headers.get("CF-Connecting-IP") || "0";
     const dig = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(day + "|" + ip + "|ten-thousand"));
     const k = [...new Uint8Array(dig)].slice(0, 12).map((b) => b.toString(16).padStart(2, "0")).join("");
-    const stub = env.CITY.get(env.CITY.idFromName("city"));
+    const stub = env.CITY.get(env.CITY.idFromName("city-launch"));
     return stub.fetch(new Request("https://city/?k=" + day + k, req));
   },
 };
